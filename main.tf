@@ -1,12 +1,12 @@
 terraform {
   backend "gcs" {
-    bucket = "nais-billing-tfstate"
+    bucket = "nais-analyse-prod-gcp-teams-to-bigquery-tfstate"
   }
 }
 
 provider "google" {
   version = "3.45.0"
-  project = "nais-billing"
+  project = "nais-analyse-prod-2dcc"
   region  = "europe-west1"
 }
 
@@ -17,7 +17,7 @@ data "archive_file" "function_archive" {
 }
 
 resource "google_storage_bucket" "bucket" {
-  name     = "cloud-function-team-to-bigquery-source"
+  name     = "nais-analyse-prod-cf-team-to-bigquery-source"
   location = "EU"
 }
 
@@ -62,7 +62,7 @@ resource "google_cloudfunctions_function" "function" {
 
 # IAM entry for a single user to invoke the function
 resource "google_service_account" "scheduler-teams-to-bigquery" {
-  account_id = "scheduler-teams-to-bigquery"
+  account_id = "scheduler-teams-to-bq"
 }
 
 resource "google_cloudfunctions_function_iam_member" "invoker" {
