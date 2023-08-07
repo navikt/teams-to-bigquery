@@ -32,18 +32,18 @@ def update_teams_in_bq(projects, table_id):
 
 def list_projects():
     # Initialize resource manager client
-    from google.cloud import resource_manager
-    client = resource_manager.Client()
+    from google.cloud import resourcemanager_v3 as grm
+    client = grm.ProjectsClient()
 
     projects = []
 
     # DEV
-    for project in client.list_projects(filter_params={'parent.id': '747183596397'}):
-        projects.append(project.name.rsplit('-dev')[0])
+    for project in client.list_projects(request=grm.ListProjectsRequest(parent="folders/970894780659")):
+        projects.append(project.project_id.rsplit('-dev')[0])
 
     # PROD
-    for project in client.list_projects(filter_params={'parent.id': '83150573901'}):
-        projects.append(project.name.rsplit('-prod')[0])
+    for project in client.list_projects(request=grm.ListProjectsRequest(parent="folders/707911698083")):
+        projects.append(project.project_id.rsplit('-prod')[0])
 
     # Vask duplikater og fjern tomme prosjektnavn
     projects = list(set(filter(None,projects)))

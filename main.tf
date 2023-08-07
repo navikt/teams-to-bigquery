@@ -2,10 +2,16 @@ terraform {
   backend "gcs" {
     bucket = "nais-analyse-prod-gcp-teams-to-bigquery-tfstate"
   }
+
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "4.76.0"
+    }
+  }
 }
 
 provider "google" {
-  version = "3.45.0"
   project = "nais-analyse-prod-2dcc"
   region  = "europe-west1"
 }
