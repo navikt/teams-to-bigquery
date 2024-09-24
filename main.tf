@@ -6,7 +6,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "4.76.0"
+      version = "6.4.0"
     }
   }
 }
@@ -52,7 +52,7 @@ resource "google_project_service" "service" {
 resource "google_cloudfunctions_function" "function" {
   name        = "teams-to-bigquery"
   description = "My function"
-  runtime     = "python38"
+  runtime     = "python312"
 
   available_memory_mb   = 256
   source_archive_bucket = google_storage_bucket.bucket.name
