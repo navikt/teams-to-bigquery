@@ -1,8 +1,12 @@
 def main(request):
     import json
-    projects =  list_projects()
+    import os
 
-    #table_id = "nais-billing.navbilling.nais_teams"
+    if request.data.get('ENV') == 'local':
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "sa.json"
+
+    projects = list_projects()
+
     table_id = "nais-analyse-prod-2dcc.navbilling.nais_teams"
     update_teams_in_bq(projects, table_id)
 
@@ -12,7 +16,7 @@ def main(request):
 def update_teams_in_bq(projects, table_id):
     # Construct BQ client
     from google.cloud import bigquery
-    client = bigquery.Client()
+    client = bigquery.Client(project='nais-analyse-prod-2dcc')
 
     # Delete and recreate table (trunc workaround)
     schema = [bigquery.SchemaField("team", "STRING", mode="REQUIRED")]
@@ -25,7 +29,10 @@ def update_teams_in_bq(projects, table_id):
     projects.columns=['team']
 
     # Insert rows
-    client.insert_rows_from_dataframe(table, projects)
+    try:
+        client.insert_rows_from_dataframe(table, projects)
+    except Exception as e:
+        print(e)
 
     return True
 
@@ -38,15 +45,17 @@ def list_projects():
     projects = []
 
     # DEV
-    for project in client.list_projects(request=grm.ListProjectsRequest(parent="folders/970894780659")):
+    for project in client.list_projects(parent="folders/970894780659"):
         projects.append(project.project_id.rsplit('-dev')[0])
 
     # PROD
-    for project in client.list_projects(request=grm.ListProjectsRequest(parent="folders/707911698083")):
+    for project in client.list_projects(parent="folders/707911698083"):
         projects.append(project.project_id.rsplit('-prod')[0])
 
     # Vask duplikater og fjern tomme prosjektnavn
     projects = list(set(filter(None,projects)))
+
+    print(f"Found {len(projects)} projects")
 
     return projects
 
