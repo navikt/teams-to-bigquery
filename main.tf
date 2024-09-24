@@ -61,7 +61,7 @@ resource "google_cloudfunctions_function" "function" {
   timeout               = 60
   entry_point           = "main"
   labels = {
-    team = "nais"
+    team = "nais-analyse"
   }
   service_account_email = data.google_service_account.projects-to-bigquery.email
 }

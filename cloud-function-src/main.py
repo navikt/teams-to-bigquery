@@ -2,9 +2,6 @@ def main(request):
     import json
     import os
 
-    if request.data.get('ENV') == 'local':
-        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "sa.json"
-
     projects = list_projects()
 
     table_id = "nais-analyse-prod-2dcc.navbilling.nais_teams"
