@@ -1,6 +1,5 @@
 def main(request):
     import json
-    import os
 
     projects = list_projects()
 
@@ -28,6 +27,7 @@ def update_teams_in_bq(projects, table_id):
     # Insert rows
     try:
         client.insert_rows_from_dataframe(table, projects)
+        print(f'Inserted {len(projects)} rows into {table_id}')
     except Exception as e:
         print(e)
 
@@ -43,11 +43,17 @@ def list_projects():
 
     # DEV
     for project in client.list_projects(parent="folders/970894780659"):
-        projects.append(project.project_id.rsplit('-dev')[0])
+        if '-dev' in project.display_name:
+            team_name = project.display_name.split('-dev')[0]
+        elif '-ci' in project.display_name:
+            team_name = project.display_name.split('-ci')[0]
+        else:
+            team_name = project.display_name
+        projects.append(team_name)
 
     # PROD
     for project in client.list_projects(parent="folders/707911698083"):
-        projects.append(project.project_id.rsplit('-prod')[0])
+        projects.append(project.display_name.rsplit('-prod')[0])
 
     # Vask duplikater og fjern tomme prosjektnavn
     projects = list(set(filter(None,projects)))
@@ -58,16 +64,18 @@ def list_projects():
 
 
 def truncate_target_table(client, table_id, table):
-    from google.api_core.exceptions import AlreadyExists, NotFound
+    from google.api_core.exceptions import NotFound
 
-    # Delete table if exists
+    # Truncate table if exists
     try:
-        client.delete_table(table_id)
-        print(f'{table_id} deleted')
+        client.query(f'TRUNCATE TABLE `{table_id}`').result()
+        print(f'{table_id} truncated')
     except NotFound:
-        print(f'Table {table_id} not found, not deleted')
-
-    table = client.create_table(table)  # Make an API request.
-    print(f'Created table {table.project}.{table.dataset_id}.{table.table_id}')
+        print(f'Table {table_id} not found, creating it')
+        table = client.create_table(table)  # Make an API request.
+        print(f'Created table {table.project}.{table.dataset_id}.{table.table_id}')
 
     return True
+
+if __name__ == "__main__":
+    main(None)
